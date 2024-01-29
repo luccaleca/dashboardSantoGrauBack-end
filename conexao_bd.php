@@ -1,10 +1,13 @@
 <?php
-
-//Cabecalhos obrigatorios
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
-
-//Incluir a conexao
-include_once '../conexao.php';
-
-//$id = 3;
+        
+       
+            try {
+                $conn = new PDO("firebird:dbname=C:\SavWinRevo\Servidor\DataBase\BDSAVWINREVO.FDB", "SYSDBA", "masterkey");
+            } catch (PDOException $e) {
+                echo '<pre>';
+                print_r($e);
+                echo '</pre>';
+                die(); //deu ruim
+            }    
+            
+?>
