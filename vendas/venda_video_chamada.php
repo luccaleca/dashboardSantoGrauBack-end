@@ -1,5 +1,15 @@
 <?php
+// Permitir solicitações de qualquer origem
+header("Access-Control-Allow-Origin: *");
+
+// Métodos permitidos
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
+
+// Cabeçalhos permitidos
+header("Access-Control-Allow-Headers: Content-Type");
+
 include '../conexao_bd.php'; // Conexão com o Banco de dados
+
 
 // Verifica se o parâmetro 'intervalo' foi enviado
 if (isset($_GET['intervalo'])) {
@@ -50,24 +60,38 @@ if (isset($_GET['intervalo'])) {
         GROUP BY o.TVNDESCRICAO , k.NOME, m.MTVVALORMETA 
         ORDER BY VENDAS DESC
     ";
-    $result = $conn->query($sql);
+    // Executa a consulta SQL
+$result = $conn->query($sql);
 
-    if ($result !== false) {
-        $data = $result->fetchAll(PDO::FETCH_ASSOC);
-        if (!empty($data)) {
-            echo json_encode($data);
-        } else {
-            echo json_encode(array('message' => 'Nenhum resultado encontrado.'));
+// Verifica se a consulta foi bem-sucedida
+if ($result !== false) {
+    // Obtém os dados como um array associativo
+    $data = $result->fetchAll(PDO::FETCH_ASSOC);
+
+     // Verifica se há dados encontrados
+     if (!empty($data)) {
+        // Itera sobre os resultados e formata os valores
+        foreach ($data as &$row) {
+            $row['VENDAS'] = number_format($row['VENDAS'], 2, ',', '.');
+            $row['TM'] = number_format($row['TM'], 2, ',', '.');
+            $row['META'] = number_format($row['META'], 2, ',', '.');
         }
-    } else {
-        // Lida com erros na execução da consulta
-        $errorInfo = $conn->errorInfo();
-        echo json_encode(array('error' => 'Erro na execução da consulta: ' . $errorInfo[2]));
-    }
-    
 
-    $conn = null; // Fecha a conexão PDO
-    exit;
+        // Converte os dados para JSON e imprime
+        header('Content-Type: application/json');
+        echo json_encode($data);
+    } else {
+        // Se não houver dados, retorna uma mensagem em JSON
+        echo json_encode(array('message' => 'Nenhum resultado encontrado.'));
+    }
+} else {
+    // Lida com erros na execução da consulta
+    $errorInfo = $conn->errorInfo();
+    echo json_encode(array('error' => 'Erro na execução da consulta: ' . $errorInfo[2]));
+}
+
+$conn = null; // Fecha a conexão PDO
+exit;
 }
 // Certifique-se de fechar a chave if adequadamente
 ?>
